@@ -22,10 +22,10 @@ public class Cell extends JTextField {
 
     // number existing within the cell
     int number;
-    // 0 is blank
 
     //status from sudoku.Cell status
     CellStatus status;
+
 
     public Cell(int newRow, int newCol){
         super(); // run JTextField constructor

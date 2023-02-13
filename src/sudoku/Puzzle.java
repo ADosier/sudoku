@@ -1,9 +1,56 @@
 package sudoku;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
+/* Todo the puzzle class takes care of wave collapse functionality and needs to work with the following
+        - numbers (the solved numbers)
+        - Qstate & entropy (either separate bool[9] + number of truths
+        - isGiven
+    Functions needed:
+        - random(a, b) to generate a number between and including a and b to randomly choose how the wave function collapses
+        - wave collapse () to house all the operations needed to generate the puzzle from scratch
+        - qupdate() when a cell collapses into a specific number, the other cells must update their quantum states and entropy
+*
+*
+* */
+
+
 public class Puzzle {
+
+    public class PCell{
+        int num;
+        private boolean [] Qstate = new boolean [9];
+        private int entropy;
+
+        PCell()
+        {
+            boolean [] Qstate = {true, true, true, true, true, true, true, true, true};
+            entropy = 9;
+        }
+
+        public void updateQState(int setNum)
+        {
+            // the possibility of setNum is set to false on Qstate
+            // if the Qstate was changed from true to false, reduce the entropy
+
+            boolean currentState = Qstate[setNum-1];
+            Qstate[setNum-1] = false;
+            if (currentState)
+            {
+                entropy--;
+            }
+        }
+        public boolean [] getQstate(){
+            return Qstate;
+        }
+        public int getEntropy(){
+            return entropy;
+        }
+    }
+
+    Random random = new Random();
 
     // the raw numbers across the board
     int[][] numbers = new int[9][9];
@@ -17,11 +64,25 @@ public class Puzzle {
 
     public void newPuzzle(int cellsToGuess) {
 
+
         // todo Generate a puzzle given the number of cells to be guessed, which controls difficulty
+
 
 
         // for now I will use this puzzle array to make sure everything works before implementing my wave collapse function
         // *** as it stands, I have a hardcoded puzzle that reports back the board of numbers and the cells take over from there
+
+        // todo generate the board!
+        PCell[][] board = new PCell[9][9];
+
+        // todo create a function to collect all cells with the lowest entropy
+            // from that list, choose one at random
+            // from that cell, gather a list of possible values
+            // from that list, choose one at random
+            // collapse the cell!
+                // update the row and column's QState
+                // update the other pCell's within the 3x3 grid also
+
 
 
         int[][] premadeBoard =
@@ -120,7 +181,10 @@ public class Puzzle {
 
         return true;
     }
-
+    public int random(int min, int max){
+        // generates a random number between min and max and including them.
+        return random.nextInt(max - min + 1) + min;
+    }
 
 
 }
