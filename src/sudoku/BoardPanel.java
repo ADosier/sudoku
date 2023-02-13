@@ -139,7 +139,6 @@ public class BoardPanel extends JPanel {
         if (isSolved())
         {
             System.out.println("Updating cell with numIn of " + numIn + " and source.num " + source.number + "to final solution");
-            //System.out.println("CONGRATS! You Solved the Puzzle");
             winLabel.setVisible(true);
         }
 
