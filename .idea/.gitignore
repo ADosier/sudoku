@@ -1,9 +1,0 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-*.class
-*.jar
-## intellij
-out/
-.idea/
-*.iml
