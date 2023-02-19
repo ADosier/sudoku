@@ -1,8 +1,6 @@
 package sudoku;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /* Todo the puzzle class takes care of wave collapse functionality and needs to work with the following
         - numbers (the solved numbers)
@@ -23,24 +21,28 @@ public class Puzzle {
         int num;
         private boolean [] Qstate = new boolean [9];
         private int entropy;
-
-        PCell()
+        private int row;
+        private int col;
+        PCell(int r, int c)
         {
-            boolean [] Qstate = {true, true, true, true, true, true, true, true, true};
+            Arrays.fill(Qstate, true); // fill array with true
             entropy = 9;
+            num = 0; // default to 0
+            row = r;
+            col = c;
         }
 
         public void updateQState(int setNum)
         {
             // the possibility of setNum is set to false on Qstate
             // if the Qstate was changed from true to false, reduce the entropy
-
             boolean currentState = Qstate[setNum-1];
-            Qstate[setNum-1] = false;
-            if (currentState)
+            if (currentState) // change entropy if state == true
             {
+                Qstate[setNum-1] = false;
                 entropy--;
             }
+
         }
         public boolean [] getQstate(){
             return Qstate;
@@ -48,9 +50,55 @@ public class Puzzle {
         public int getEntropy(){
             return entropy;
         }
+        public boolean getQstate(int index)
+        {
+            if (index < 0)
+            {
+                return false;
+            }
+            if(index > 8)
+            {
+                return false;
+            }
+            return Qstate[index];
+        }
+        public boolean collapseSolution(int sol)
+        {
+            if(sol == 0)
+            {
+                return false;
+            }
+            num = sol;
+            entropy = 0;
+            Arrays.fill(Qstate, false);
+            return true;
+        }
+
+        public void printQState(){
+            System.out.print("{");
+            for (int i = 0; i < 8; i++)
+            {
+                if(Qstate[i] == true)
+                {
+                    System.out.print("True, ");
+                }
+                else
+                {
+                    System.out.print("False, ");
+                }
+            }
+            if(Qstate[8] == true)
+            {
+                System.out.println("True }");
+            }
+            else{
+                System.out.println("False }");
+            }
+        }
     }
 
     Random random = new Random();
+    PCell[][] board = new PCell[9][9]; // the PCells are just pre-cells used in the wave collapse function prior to returning a puzzle to the game
 
     // the raw numbers across the board
     int[][] numbers = new int[9][9];
@@ -67,34 +115,44 @@ public class Puzzle {
 
         // todo Generate a puzzle given the number of cells to be guessed, which controls difficulty
 
-
-
-        // for now I will use this puzzle array to make sure everything works before implementing my wave collapse function
-        // *** as it stands, I have a hardcoded puzzle that reports back the board of numbers and the cells take over from there
-
         // todo generate the board!
-        PCell[][] board = new PCell[9][9];
+
+        // fill the board out with actual objects
+        for (int i =0; i < 9; i++)
+        {
+            for (int j = 0; j < 9; j++)
+            {
+                board[i][j] = new PCell(i, j);
+            }
+        }
+
+        //System.out.println("board[1][2] location is row: " + board[1][2].row + " col: " + board[1][2].col);
 
         // todo create a function to collect all cells with the lowest entropy
-            // from that list, choose one at random
-            // from that cell, gather a list of possible values
-            // from that list, choose one at random
-            // collapse the cell!
-                // update the row and column's QState
-                // update the other pCell's within the 3x3 grid also
 
+        // todo do while waveCollapse is true
 
+        while(waveCollapse());
 
-        int[][] premadeBoard =
-                       {{5, 3, 4, 6, 7, 8, 9, 1, 2},
-                        {6, 7, 2, 1, 9, 5, 3, 4, 8},
-                        {1, 9, 8, 3, 4, 2, 5, 6, 7},
-                        {8, 5, 9, 7, 6, 1, 4, 2, 3},
-                        {4, 2, 6, 8, 5, 3, 7, 9, 1},
-                        {7, 1, 3, 9, 2, 4, 8, 5, 6},
-                        {9, 6, 1, 5, 3, 7, 2, 8, 4},
-                        {2, 8, 7, 4, 1, 9, 6, 3, 5},
-                        {3, 4, 5, 2, 8, 6, 1, 7, 9}};
+        int[][] premadeBoard = new int[9][9];
+        for (int i = 0; i < 9; i++)
+        {
+            for (int j = 0; j < 9; j++)
+            {
+                premadeBoard[i][j] = board[i][j].num;
+            }
+        }
+
+       //int[][] premadeBoard =
+       //               {{5, 3, 4, 6, 7, 8, 9, 1, 2},
+       //                {6, 7, 2, 1, 9, 5, 3, 4, 8},
+       //                {1, 9, 8, 3, 4, 2, 5, 6, 7},
+       //                {8, 5, 9, 7, 6, 1, 4, 2, 3},
+       //                {4, 2, 6, 8, 5, 3, 7, 9, 1},
+       //                {7, 1, 3, 9, 2, 4, 8, 5, 6},
+       //                {9, 6, 1, 5, 3, 7, 2, 8, 4},
+       //                {2, 8, 7, 4, 1, 9, 6, 3, 5},
+       //                {3, 4, 5, 2, 8, 6, 1, 7, 9}};
 
         // once you have a board of filled out numbers, copy over the numbers into the array "numbers" to initalize the puzzle
 
@@ -180,6 +238,114 @@ public class Puzzle {
         }
 
         return true;
+    }
+    private boolean waveCollapse()
+    {
+
+        // find a list of lowest entropies that aren't 0
+        ArrayList<PCell> uncollapsedList = new ArrayList<PCell>();
+        int lowestEntropy = 9;
+        // if lentropycell is empty, return false
+        // sort the cells from lowest to highest entropy
+        for (int i = 0; i < 9; i++)
+        {
+            for (int j = 0; j < 9; j++)
+            {
+                if(board[i][j].getEntropy() != 0)
+                {
+                    uncollapsedList.add(board[i][j]);
+                    if (board[i][j].getEntropy() < lowestEntropy)
+                    {
+                        lowestEntropy = board[i][j].getEntropy();
+                    }
+                }
+            }
+        }
+        if(uncollapsedList.isEmpty())
+        {
+            // if all values for entropy are 0, return false. the numbers have collapsed into a solution
+            return false;
+        }
+
+        // sort the cells in order of entropy, lowest to highest
+        uncollapsedList.sort(Comparator.comparing((PCell p) -> p.getEntropy()));
+
+        ArrayList<PCell> lEntropyList = new ArrayList<PCell>();
+
+        for(int i =0; i < uncollapsedList.size(); i++)
+        {
+            if (uncollapsedList.get(i).getEntropy() > lowestEntropy)
+            {
+                break; // get out of loop. all lowest entropy pCells already copied over
+            }
+            lEntropyList.add(uncollapsedList.get(i));
+        }
+
+        //the list of all lowest entropies should exist within lentropyList
+        // test this to make sure it works
+
+        // choose one at random
+
+
+        // random PCell chosen from the list of least entropy
+        PCell target = lEntropyList.get(random(0, lEntropyList.size()-1));
+
+        ArrayList<Integer> possibleNumbers = new ArrayList<Integer>();
+        for (int i =0; i < 9; i ++)
+        {
+            if (target.getQstate(i))
+            {
+                possibleNumbers.add(i+1); // index corresponds to the number n+1 in qstate
+            }
+        }
+
+        if(possibleNumbers.isEmpty())
+        {
+            System.out.println("the program tried to collapse a solved pCell");
+        }
+
+
+        //lEntropyList.get(random(0, lEntropyList.size()-1));
+        int solution = possibleNumbers.get(random(0, possibleNumbers.size()-1));
+
+        if(board[target.row][target.col].collapseSolution(solution))
+        {
+            propagateUpdates(board[target.row][target.col]);
+        }
+
+        return true;
+    }
+    private void propagateUpdates(PCell target)
+    {
+        // propagate updates to every element in the same row/col/room
+        for (int i =0; i < 9; i++)
+        {
+            // update all elements in the same row
+            board[i][target.col].updateQState(target.num);
+
+            // update all elements in the same column
+            board[target.row][i].updateQState(target.num);
+
+        }
+
+
+        // round down the row/column numbers to match a number divisible by 3
+        // this calculates the origin point of the "room (3x3 grid)" the target is located in
+        int rowOrigin = target.row/3;
+        int colOrigin = target.col/3;
+
+        for(int c = 0; c < 3; c++)
+        {
+            for(int r = 0; r < 3; r++)
+            {
+                // from the room origin's row/col, itterate through each pCell and propagate changes
+                board[(rowOrigin*3)+r][(colOrigin*3)+c].updateQState(target.num);
+            }
+        }
+
+
+
+
     }
     public int random(int min, int max){
         // generates a random number between min and max and including them.
