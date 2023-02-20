@@ -49,7 +49,7 @@ public class BoardPanel extends JPanel {
 
     public void newGame(JLabel wg) {
         //create new puzzle
-        puzzle.newPuzzle(2);
+        puzzle.newPuzzle(32);
         winLabel = wg;
         for (int row = 0; row < 9; row++)
         {

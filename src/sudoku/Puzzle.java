@@ -112,11 +112,6 @@ public class Puzzle {
 
     public void newPuzzle(int cellsToGuess) {
 
-
-        // todo Generate a puzzle given the number of cells to be guessed, which controls difficulty
-
-        // todo generate the board!
-
         // fill the board out with actual objects
         for (int i =0; i < 9; i++)
         {
@@ -126,70 +121,48 @@ public class Puzzle {
             }
         }
 
-        //System.out.println("board[1][2] location is row: " + board[1][2].row + " col: " + board[1][2].col);
-
-        // todo create a function to collect all cells with the lowest entropy
-
-        // todo do while waveCollapse is true
-
+        // wave collapse until all values are set it will populate a board with numbers that follow the convensions of sudoku
         while(waveCollapse());
 
-        int[][] premadeBoard = new int[9][9];
-        for (int i = 0; i < 9; i++)
-        {
-            for (int j = 0; j < 9; j++)
-            {
-                premadeBoard[i][j] = board[i][j].num;
-            }
-        }
 
-       //int[][] premadeBoard =
-       //               {{5, 3, 4, 6, 7, 8, 9, 1, 2},
-       //                {6, 7, 2, 1, 9, 5, 3, 4, 8},
-       //                {1, 9, 8, 3, 4, 2, 5, 6, 7},
-       //                {8, 5, 9, 7, 6, 1, 4, 2, 3},
-       //                {4, 2, 6, 8, 5, 3, 7, 9, 1},
-       //                {7, 1, 3, 9, 2, 4, 8, 5, 6},
-       //                {9, 6, 1, 5, 3, 7, 2, 8, 4},
-       //                {2, 8, 7, 4, 1, 9, 6, 3, 5},
-       //                {3, 4, 5, 2, 8, 6, 1, 7, 9}};
-
-        // once you have a board of filled out numbers, copy over the numbers into the array "numbers" to initalize the puzzle
-
-        //TODO this is testing code for puzzle validation
-        if (!puzzleVerify(premadeBoard))
+        //verify the puzzle follows sudoku rules. this is primarily for future puzzles that users may enter
+        if (!puzzleVerify())
         {
             System.out.println("The puzzle failed validation!");
         }
 
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
-                numbers[row][col] = premadeBoard[row][col];
+                numbers[row][col] = board[row][col].num;
             }
 
         }
 
-        boolean[][] premadeClues =
-                {{true, true, true, true, true, false, true, true, true},
-                        {true, true, true, true, true, true, true, true, false},
-                        {true, true, true, true, true, true, true, true, true},
-                        {true, true, true, true, true, true, true, true, true},
-                        {true, true, true, true, true, true, true, true, true},
-                        {true, true, true, true, true, true, true, true, true},
-                        {true, true, true, true, true, true, true, true, true},
-                        {true, true, true, true, true, true, true, true, true},
-                        {true, true, true, true, true, true, true, true, true}};
+        // create a list that has 82 booleans where cellsToGuess is the number of false entries
+        ArrayList<Boolean> clues = new ArrayList<Boolean>();
+        for (int i = 0; i < 81; i++) // 81 is 9x9
+        {
+            if (i < cellsToGuess)
+            {
+                clues.add(false);
+            }
+            else
+            {
+                clues.add(true);
+            }
+        }
 
+        Collections.shuffle(clues); // shuffle the false entries throughout the puzzle
+
+        // copy over this array to isGiven so the boardPuzzle can render out the puzzle easier
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
-                isGiven[row][col] = premadeClues[row][col];
+                isGiven[row][col] = clues.get(col+(row*9));// col+(row*9) is a conversion between a long list and the [row][col] format in isGiven
             }
-
         }
-
     }
 
-    private boolean puzzleVerify(int nums [][]) {
+    private boolean puzzleVerify() {
         // This function simply takes in an int [9][9] and verifies if the numbers follow the rules of sudoku
 
 
@@ -200,7 +173,7 @@ public class Puzzle {
             {
 
                 // check columns
-                if(!col.add(nums[j][i]))
+                if(!col.add(board[j][i].num))
                 {   // add will return false if the number already exists within the set
                     // therefore, if I put each number in a given column or row into the set,
                         // the first element to break the sudoku rule will invalidate the puzzle
@@ -208,7 +181,7 @@ public class Puzzle {
                 }
 
                 // check rows
-                if(!row.add(nums[i][j]))
+                if(!row.add(board[j][i].num))
                 { // this does the same as above, but with the i and j elements flipped
                     return false;
                 }
@@ -229,7 +202,7 @@ public class Puzzle {
                 for (int boxCol = 0; boxCol < 3; boxCol++)
                     for (int boxRow = 0; boxRow < 3; boxRow++)
                     {
-                        if(!box.add(nums[colIndex+boxCol][rowIndex+boxRow]))
+                        if(!box.add(board[colIndex+boxCol][rowIndex+boxRow].num))
                         {
                             return false;
                         }
