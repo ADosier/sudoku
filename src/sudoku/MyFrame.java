@@ -14,9 +14,6 @@ public class MyFrame extends JFrame {
 
     BoardPanel boardPanel;
 
-
-    JButton jbNewGame;
-
     MyFrame(){
 
 
@@ -41,6 +38,10 @@ public class MyFrame extends JFrame {
         titlePanel.add(winLabel);
         winLabel.setVisible(false);
 
+        JButton newGameButton = new JButton("New Game");
+        newGameButton.setBounds(0,0, 200,200);
+        botPanel.add(newGameButton);
+
 
         this.add(boardPanel, BorderLayout.CENTER);
         this.add(titlePanel, BorderLayout.NORTH);
@@ -51,6 +52,8 @@ public class MyFrame extends JFrame {
 
 
         //TODO setup the JBNewGame button to setup a new game on the south panel
+
+
         boardPanel.newGame(winLabel);
 
 
